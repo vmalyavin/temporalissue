@@ -7,7 +7,7 @@ import (
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
 
-	models2 "temporalissue/models"
+	"temporalissue/models"
 )
 
 type Activities struct {
@@ -25,12 +25,12 @@ func WithPaymentStatusOptions(ctx workflow.Context) workflow.Context {
 }
 
 // PaymentStatus - stub activity to get payment status from external service
-func (a *Activities) PaymentStatus(_ context.Context, _ *models2.Order) (*models2.OrderPaymentStatus, error) {
+func (a *Activities) PaymentStatus(_ context.Context, _ *models.Order) (*models.OrderPaymentStatus, error) {
 	return nil, nil
 }
 
-func PaymentStatusExecute(ctx workflow.Context, order *models2.Order) (*models2.OrderPaymentStatus, error) {
-	var paymentStatus models2.OrderPaymentStatus
+func PaymentStatusExecute(ctx workflow.Context, order *models.Order) (*models.OrderPaymentStatus, error) {
+	var paymentStatus models.OrderPaymentStatus
 	if err := workflow.ExecuteActivity(
 		WithPaymentStatusOptions(ctx),
 		(&Activities{}).PaymentStatus,

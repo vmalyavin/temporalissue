@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"go.temporal.io/sdk/testsuite"
 
-	models2 "temporalissue/models"
+	"temporalissue/models"
 	"temporalissue/workflows/testflow"
 	"temporalissue/workflows/testflow/activities"
 	"temporalissue/workflows/testflow/signals"
@@ -39,22 +39,22 @@ func (s *UnitTestSuite) AfterTest(_, _ string) {
 func (s *UnitTestSuite) Test_OrderCancellation() {
 	a := activities.Activities{}
 	orderID := testOrderID
-	state := &models2.Order{
+	state := &models.Order{
 		ID: strfmt.UUID(orderID),
-		OrderCheckout: models2.OrderCheckout{
-			Payment: &models2.OrderPayment{
-				Code: models2.PaymentCodeCardOnline,
+		OrderCheckout: models.OrderCheckout{
+			Payment: &models.OrderPayment{
+				Code: models.PaymentCodeCardOnline,
 			},
 		},
 	}
 
 	// mock payment status activity - always new
 	s.env.OnActivity(a.PaymentStatus, mock.Anything, mock.Anything).Return(
-		&models2.OrderPaymentStatus{Status: models2.PaymentStatusNew}, nil,
+		&models.OrderPaymentStatus{Status: models.PaymentStatusNew}, nil,
 	)
 
 	// send order-cancel signal
-	s.env.RegisterDelayedCallback(s.cancelSignal(models2.CancelReasonCourierCancelOrder, time.Minute*1))
+	s.env.RegisterDelayedCallback(s.cancelSignal(models.CancelReasonCourierCancelOrder, time.Minute*1))
 
 	s.env.ExecuteWorkflow(testflow.TestFlow, state)
 	s.True(s.env.IsWorkflowCompleted())
@@ -65,11 +65,11 @@ func (s *UnitTestSuite) Test_OrderCancellation() {
 	// get result
 	err = res.Get(&state)
 	s.NoError(err)
-	s.assertOrderStatus(models2.OrderStatusCancel)
+	s.assertOrderStatus(models.OrderStatusCancel)
 }
 
-func (s *UnitTestSuite) getOrder() *models2.Order {
-	result := models2.Order{}
+func (s *UnitTestSuite) getOrder() *models.Order {
+	result := models.Order{}
 	res, err := s.env.QueryWorkflow(testflow.QueryHandlerOrder)
 	s.NoError(err)
 	// nolint
@@ -77,13 +77,13 @@ func (s *UnitTestSuite) getOrder() *models2.Order {
 	return &result
 }
 
-func (s *UnitTestSuite) assertOrderStatus(status models2.OrderStatus) {
+func (s *UnitTestSuite) assertOrderStatus(status models.OrderStatus) {
 	result := s.getOrder()
 	s.Equal(status, result.Status)
 }
 
 func (s *UnitTestSuite) cancelSignal(
-	reason models2.CancelReason,
+	reason models.CancelReason,
 	timer time.Duration,
 ) (func(), time.Duration) {
 	return func() {
